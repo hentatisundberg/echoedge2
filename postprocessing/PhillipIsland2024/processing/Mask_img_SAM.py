@@ -10,14 +10,14 @@ from tqdm import tqdm
 import os
 import pickle
 
-from created_function import npy_correction_v3,parameters_correction
+from Double_thresh_function import npy_correction_v3,parameters_correction
 
-root_path = "../Run_info" # PATH TO GO ONT HE FOLDER WITH THE INPUT/OUTPUT
+
 
 # PATH #################################################################################
-path_npy = f"{root_path}/Output/Resize_img" # Resize image
-dest_path_png = f"{root_path}/Output/Mask_img/Test" # Where the masked image will be saved
-csv_path = f"{root_path}/Output/Corrected_img_wave_bottom/Csv" #Csv file from the first output
+path_npy = "F:/SURVEY2023/PREPROCESS_DATA/Resize_Img"# Resize image
+dest_path_png = "F:/SURVEY2023/PREPROCESS_DATA/Mask" # Where the masked image will be saved
+csv_path = "F:/SURVEY2023/PREPROCESS_DATA/Csv" #Csv file from the first output
 ######################################################################################
 
 if not os.path.exists(dest_path_png):
@@ -30,10 +30,10 @@ for file in tqdm(files_npy):
     file_path = os.path.join(path_npy,file)
     img = np.load(file_path)
     min_pixel_intensity = np.min(img)
-    if min_pixel_intensity > -120:                               
-        csv_name = file.replace('complete_new.npy','.csv')
+    if min_pixel_intensity > -150:                               
+        csv_name = file.replace('_new.npy','.csv')
         csv_table = pd.read_csv(os.path.join(csv_path,csv_name))
-        median_sea_depth = np.median(csv_table['bottom_depth'])
+        median_sea_depth = np.median(csv_table['depth'])
 
         shape_top,shape_bottom,total_rows,shape_top_desc,shape_bottom_desc = parameters_correction(img,median_sea_depth,threshold = -30)    
         # Step 1 : mask the image 

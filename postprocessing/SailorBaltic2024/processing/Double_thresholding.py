@@ -276,11 +276,11 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 ###################################               path part                   ###################################  
-npy_path = 'out/Resize'               #  Path where the resized .npy files are stored
-dest_path_max = "out/Thresh_max"    # Path to save the thresh_max curve
-dest_path_min =  "out/Thresh_min"    # Path to save the thresh_min curve
-csv_path = 'out/csv'                #  Path where the original .csv files are stored
-dest_path_dt =  "out/Schools"   # path to save the double threshold output images
+npy_path = "C:/Users/lguillet/Documents/PhD/Chapter 2/Fish school extraction/Results_Baltic/Resize"               #  Path where the resized .npy files are stored
+dest_path_max = "C:/Users/lguillet/Documents/PhD/Chapter 2/Fish school extraction/Results_Baltic/Thresh_max"    # Path to save the thresh_max curve
+dest_path_min = "C:/Users/lguillet/Documents/PhD/Chapter 2/Fish school extraction/Results_Baltic/Thresh_min"    # Path to save the thresh_min curve
+csv_path = "C:/Users/lguillet/Documents/PhD/Chapter 2/Fish school extraction/Results_Baltic//csv"                #  Path where the original .csv files are stored
+dest_path_dt =  "C:/Users/lguillet/Documents/PhD/Chapter 2/Fish school extraction/Results_Baltic/Schools"   # path to save the double threshold output images
 mapping_path = npy_path                 #  Path where the mapping_info.pkl file is stored
 ###################################            end of path part               ###################################  
 
@@ -309,7 +309,7 @@ for file in tqdm(files_npy):
     file_path = os.path.join(npy_path,file)
     img = np.load(file_path)
     min_pixel_intensity = np.min(img)
-    if min_pixel_intensity > -120:                           # pass the images with echo parts        
+    if min_pixel_intensity > -150:                           # pass the images with echo parts        
         plt.imsave(f'{npy_path}/{file}_original.png',img)
 
         # Step 0 : find the corrections parameters
