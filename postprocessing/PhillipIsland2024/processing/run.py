@@ -26,10 +26,10 @@ warnings.filterwarnings("ignore")
 with open('../PI_parameters.yaml', 'r') as f:
     params = list(yaml.load_all(f, Loader=SafeLoader))
 
-csv_path = "D:/SURVEY2023/PREPROCESS_DATA/Csv"
-img_path = "D:/SURVEY2023/PREPROCESS_DATA/Img"
-npy_path = "D:/SURVEY2023/PREPROCESS_DATA/npy"
-files_path = "D:/SURVEY2023/SURVEY RAW DATA/Files" #2023 path
+csv_path = "F:/SURVEY2024/PREPROCESS_DATA/Csv"
+img_path = "F:/SURVEY2024/PREPROCESS_DATA/Img"
+npy_path = "F:/SURVEY2024/PREPROCESS_DATA/npy"
+files_path = "F:/SURVEY2024/SURVEY RAW DATA/Files" #2023 path
 # files_p = pd.read_csv('../../../test/Rerun/Rerun_files.csv')
 # files = files_p['raw_list']
 
@@ -50,7 +50,7 @@ mean_velocity = 0.63   # to decide the velocity here by histogram output
 interpolated_df = pd.DataFrame()
 for gps_file in os.listdir(gps_files_30):
     file_path_gps = os.path.join(gps_files_2,gps_file)
-    new_file_name_gps = file_path_gps.replace('_aussi_time.gps.csv', '_interpolated.csv')
+    new_file_name_gps = file_path_gps.replace('.gps.csv', '_interpolated.csv')
     if os.path.exists(new_file_name_gps):
         print(f'The file {new_file_name_gps} exists.')
         interpolated = pd.read_csv(new_file_name_gps)
@@ -82,9 +82,9 @@ for file in tqdm.tqdm(files[:]):
 
             #UTC Time
             ping_times_series = pd.to_datetime(ping_times)
-
-            # Correction for January files
-            if ping_times_series[0] > pd.to_datetime("2023-12-17 05:00:00") :
+            
+            # Correction for January 2024 files
+            if  pd.to_datetime("2024-10-10 00:00:00")> ping_times_series[0] > pd.to_datetime("2023-12-17 05:00:00")  :
                 echodata = echodata + 22.451
             
             echodata, nan_indicies = remove_vertical_lines(echodata)

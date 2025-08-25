@@ -369,3 +369,41 @@ def resize_matrix_31052024(matrix,velocity,meanvelocity):
         # Group the image with the images gotten before
         matrix_groupe = np.concatenate((matrix_groupe, matrix_chop), axis=1)
     return matrix_groupe, mapping
+
+
+def school_geometry_density_correction(Beamwidth, pulse_duration, c):
+    """
+    Correction of the school size and density depending of the depth according to Diner 2001 paper in the case of Th threshold = 0
+    Beamwidth :  in degree
+    Pulse duration: in s 
+    Bbox : list of Coordinates of the boundary box of the school extracted
+    Echogram : Matrix of the corrected echogram before extraction
+    """
+
+for each school extracted():
+    Sv_mean = Sv_tot[i]
+
+#Step 1 :
+    #Detection angle B 
+    B = 0.44*Beamwidth*(Sv_mean)**0.45
+    #Calculate a normalised length in terms of beam width number Nb
+    Nb = L/(2*depth*math.tan(B/2)) #L length of the school,depth : depth of the scool
+    #Calculate a raw correction for the image VBS (Volume backscattering signal)
+    dSv = 2.56/(Nb-1)
+    #Calculate a temporary VBS
+    Sv_new = Sv_mean + dSv
+#Step 2 :
+    #Compute the attack angle
+    A_c = Beamwidth*(1.04*(Sv_new)**0.33-1.52)
+    #school length correction
+    L_c = L-2*depth*math.tan(A_c/2)
+    #Calculate a new school length, normalised in term of beam width
+    Nb_c = L_c/(2*depth*math.tan(A_c/2))
+    #New correction of the VBS
+    dSv_c = 4.09/(Nb_c)**0.88
+    #Calculation of the corrected VBS
+    Sv_mean_c = Sv_mean + dSv_c
+    #Correction of the height 
+    H_c = H - c*pulse_duration # pulse duration,c sound velocity in the water 
+
+return H_c,L_c 

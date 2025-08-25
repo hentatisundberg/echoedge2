@@ -130,6 +130,8 @@ def thresh_info_new20240806(dest_path,criteria_table,file,thresh_index,npy_path)
 
     edges_school_file = []  # file class 5
     center_square_file = []
+    min_intensity = []
+
     plt.imsave(f'{dest_path}/{file[:-4]}_double.png',im_recon)
 
     for region in  regions:
@@ -152,6 +154,8 @@ def thresh_info_new20240806(dest_path,criteria_table,file,thresh_index,npy_path)
         max_index = np.argmax(intensities)
         max_intensity_coords = coords[max_index]
         
+        min_intensity = np.min(intensities)
+
         edges_school = find_edges(im_recon, y_coords, x_coords)
         center_square = find_center_square(max_intensity_coords, region.coords)  # use max_intensity_coords not center
         center_square_intensity =  np.mean([img[coord[0], coord[1]] for coord in center_square])
@@ -252,7 +256,8 @@ def thresh_info_new20240806(dest_path,criteria_table,file,thresh_index,npy_path)
                 "center_all":[y_all,x_all],     #[row,column]
                 "mean_depth":y_all/10,
                 "thresh_max":thresh_max,
-                "thresh_min":thresh_min}
+                "thresh_min":thresh_min,
+                'min_intensity': min_intensity}
     new_row_table = {'file':file, 
                 'nbr_school':len(label_file), 
                 'thresh_max':thresh_max, 
@@ -260,7 +265,8 @@ def thresh_info_new20240806(dest_path,criteria_table,file,thresh_index,npy_path)
                 'all_size':sum(size_file),
                 'mean_intensity_school':mean_intensity_school,
                 'mean_depth':y_all/10,
-                'mean_intensity_imgwithout0':np.mean(img[img!=0])} 
+                'mean_intensity_imgwithout0':np.mean(img[img!=0]), 
+                'min_intensity': min_intensity} 
     return file_info ,new_row_table,centroid_file
 
 
@@ -604,7 +610,7 @@ school_table = pd.DataFrame(columns=['number', 'label','file_name','size','bbox'
                                     "dif_intensity_center_edges","std_intensity_school","gradient_school",\
                                     "gradient_school_center","gradient_school_edges","dif_gradient_center_edges",\
                                     "width_length_ratio","axis_ellipse_ratio","solidity","compactness",\
-                                    "inertia_tensor_eigvals_ratio","perimeter_area_ratio","thresh_max","thresh_min"])
+                                    "inertia_tensor_eigvals_ratio","perimeter_area_ratio","thresh_max","thresh_min", "min_intensity"])
 
 for file in file_list:
     nbr_school = seg_new[file]['nbr_school']
@@ -648,7 +654,8 @@ for file in file_list:
                     "inertia_tensor_eigvals_ratio":seg_new[file]['inertia_tensor_eigvals_ratio'][i],
                     "perimeter_area_ratio":seg_new[file]['perimeter_area_ratio'][i],
                     "thresh_max":seg_new[file]['thresh_max'],
-                    "thresh_min":seg_new[file]['thresh_min']}
+                    "thresh_min":seg_new[file]['thresh_min'],
+                    "min_intensity":seg_new[file]['min_intensity']}
         new_row['dis_to_bottom'] = new_row['sea_depth']*10 - new_row['length_box']/2 - new_row['depth']*10
         if new_row['dis_to_surface'] > dis_check and new_row['dis_to_bottom'] > dis_check:
             dis_level = 2
@@ -662,4 +669,5 @@ for file in file_list:
         school_table = pd.concat([school_table, pd.DataFrame([new_row])], ignore_index=True)
 
         j = j + 1
+        
 school_table.to_csv(f'{dest_path_dt}/school_table_thresh.csv', index=False)   

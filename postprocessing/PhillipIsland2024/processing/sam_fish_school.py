@@ -262,12 +262,12 @@ def sam_info(file,sam_result,npy_path,csv_path,dest_path):    # version time : 2
 ##############################################################################################
 ##############                       version time  20240806                     ##############
 ##############################################################################################
-dest_path = "F:/SURVEY2023/Segment_anything"    # path to save the choosed informations from the sam segmentations
+dest_path = "F:/SURVEY2023/Segment_Anything"    # path to save the choosed informations from the sam segmentations
 npy_path = "F:/SURVEY2023/PREPROCESS_DATA/Resize_img"                       #  Path where the resized .npy files are stored
 csv_path = "F:/SURVEY2023/PREPROCESS_DATA/Csv"                #  Path where the original .csv files are stored
 img_path = "F:/SURVEY2023/PREPROCESS_DATA/Mask"        #  Path where the resized and corrected images are stored
 mapping_path = os.path.join(npy_path,"mapping_info.pkl")      #  the mapping_info.pkl file is stored in the same path as the resized npy files
-sam_result_path = "F:/SURVEY2023/Segment_anything/output_bass_strait/output_bass_strait/sam_results.pkl"    #  Path where the segmentations by sam is stored
+sam_result_path = "F:/SURVEY2023/Segment_Anything/output_bass_strait/output_bass_strait/sam_results.pkl"    #  Path where the segmentations by sam is stored
 
 if not os.path.exists(dest_path):
     os.makedirs(dest_path)
