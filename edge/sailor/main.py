@@ -41,6 +41,8 @@ files = [f for f in files if f not in completed_files]
 
 open(new_processed_files_path, "w").close()
 
+file = "SLUAquaSailor2020V2-Phase0-D20250804-T133112-0.raw"
+
 if files:
     for file in files:
         print(file)
@@ -58,11 +60,13 @@ if files:
                 echodata, nan_indicies = remove_vertical_lines(echodata)
                 echodata_swap = np.swapaxes(echodata, 0, 1)
 
+                data_to_images(echodata_swap, "out/test/test2", upper = params[0]['image_upper'], lower = params[0]['image_lower']) # save img without ground
+                
                 data_to_images(echodata_swap, f'{img_path}/{new_file_name}') # save img without ground
                 os.remove(f'{img_path}/{new_file_name}_greyscale.png')
 
                 # Detect bottom algorithms
-                depth, hardness, depth_roughness, new_echodata = find_bottom(echodata_swap, params[0]['move_avg_windowsize'])
+                depth, hardness, depth_roughness, new_echodata = find_bottom(echodata_swap, params[0]['move_avg_windowsize'], params[0]['bottom_hardness_thresh'])
 
                 # Find, measure and remove waves in echodata
                 new_echodatax = new_echodata.copy()
@@ -130,6 +134,7 @@ if files:
 
                 save_data(data_dict, file.replace('.raw', '.csv'), csv_path, new_processed_files_path)
              
+                sys.exit()
             except Exception as error:
                 traceback.print_exc()
                 print(f'Problems with {file}')
@@ -137,3 +142,6 @@ if files:
 
 else:
     print('All exising files already processed and analyzed.')
+
+# Run example main 
+# python3 -i edge/sailor/main.py ../../../../../../mnt/BSP_NAS2/Acoustics/Sailor_Karlso/Raw_data/2025 edge/sailor/completed_files.txt edge/sailor/new_processed_files.txt ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025/csv edge/sailor/params2025.yaml ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025/img
