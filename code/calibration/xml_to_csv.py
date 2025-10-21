@@ -4,13 +4,8 @@
 
 import xml.etree.ElementTree as ET
 import csv
-import os
 import sys
-import glob
-import re
-import pandas as pd
-import numpy as np
-from typing import List
+
 
 
 #!/usr/bin/env python3
@@ -94,6 +89,7 @@ def make_row_from_occ(occ):
     """
     Split semicolon-separated values and create multiple rows.
     Each position in the semicolon-separated lists becomes a separate row.
+    Handle multiple occurrences of fields (e.g., two sets of beam measurements).
     """
     # Get all the field values and split by semicolon
     all_rows = []
@@ -105,10 +101,14 @@ def make_row_from_occ(occ):
     for field in BASE_FIELDS:
         values = occ.get(field, [])
         if values:
-            # Take the first occurrence and split by semicolon
-            split_vals = values[0].split(';') if values else []
-            split_values[field] = split_vals
-            max_length = max(max_length, len(split_vals))
+            # Split all occurrences by semicolon
+            all_splits = []
+            for val in values:
+                all_splits.append(val.split(';') if ';' in val else [val])
+            split_values[field] = all_splits
+            # Max length from first occurrence
+            if all_splits:
+                max_length = max(max_length, len(all_splits[0]))
         else:
             split_values[field] = []
     
@@ -118,13 +118,13 @@ def make_row_from_occ(occ):
         
         # Single occurrence fields first
         for field in ["Frequency", "Gain", "SaCorrection"]:
-            values = split_values.get(field, [])
-            if i < len(values):
-                row.append(values[i])
+            all_splits = split_values.get(field, [])
+            if all_splits and len(all_splits) > 0 and i < len(all_splits[0]):
+                row.append(all_splits[0][i])
             else:
                 row.append("")
         
-        # Multi-occurrence fields - for now just use first occurrence
+        # Multi-occurrence fields - handle both _1 and _2 columns
         multi_fields = [
             "BeamWidthAlongship", "BeamWidthAthwartship",
             "AngleOffsetAlongship", "AngleOffsetAthwartship", 
@@ -132,14 +132,17 @@ def make_row_from_occ(occ):
         ]
         
         for field in multi_fields:
-            values = split_values.get(field, [])
+            all_splits = split_values.get(field, [])
             # First occurrence (_1 column)
-            if i < len(values):
-                row.append(values[i])
+            if all_splits and len(all_splits) > 0 and i < len(all_splits[0]):
+                row.append(all_splits[0][i])
             else:
                 row.append("")
-            # Second occurrence (_2 column) - empty for now since we have semicolon-separated data
-            row.append("")
+            # Second occurrence (_2 column)
+            if all_splits and len(all_splits) > 1 and i < len(all_splits[1]):
+                row.append(all_splits[1][i])
+            else:
+                row.append("")
     
         all_rows.append(row)
     
@@ -180,4 +183,4 @@ if __name__ == "__main__":
     stream_and_extract(input_xml, output_csv)
 
 # Run example
-# python3 code/calibration/xml_to_csv.py temp/CalibrationDataFile-SailorKlintehamn210421oproceseerad.xml temp/cal_out.csv
+# python3 code/calibration/xml_to_csv.py temp/CalibrationDataFile-D20250706HudsonBay.xml temp/cal_hudson2025.csv
