@@ -32,7 +32,7 @@ def find_fish_median(echodata, waves, ground):
 
 
 
-def medianfun(nasc, start, stop):
+def medianfun(nasc, start, stop, max_depth):
     """
     Function to calculate the median of cumulative sums for each list in the input list.
     It uses nasc outputted from the find_fish_median2 function
@@ -41,7 +41,7 @@ def medianfun(nasc, start, stop):
     nasc_copy = nasc.copy()
     for ping in nasc_copy:
         ping[0:(start*10)] = 0 #*10 to transform into pixels
-        ping[(stop*10):1000] = 0
+        ping[(stop*10):max_depth*10] = 0
         cumsum = np.cumsum(ping)
         totnasc = sum(ping)
         medval = totnasc/2

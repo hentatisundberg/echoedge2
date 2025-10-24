@@ -27,8 +27,9 @@ with open(sys.argv[5], 'r') as f:
 path = sys.argv[1]
 completed_files_path = sys.argv[2]
 new_processed_files_path = sys.argv[3]
-csv_path = sys.argv[4]
-img_path = sys.argv[6]
+output_path = sys.argv[4]
+csv_path = output_path+'/csv'
+img_path = output_path+'/img'
 
 
 files = os.listdir(path)
@@ -40,8 +41,6 @@ completed_files = [file.replace('\n', '') for file in completed_files]
 files = [f for f in files if f not in completed_files]
 
 open(new_processed_files_path, "w").close()
-
-file = "SLUAquaSailor2020V2-Phase0-D20250804-T133112-0.raw"
 
 if files:
     for file in files:
@@ -59,10 +58,8 @@ if files:
                 echodata = echodata.Sv.to_numpy()[0]
                 echodata, nan_indicies = remove_vertical_lines(echodata)
                 echodata_swap = np.swapaxes(echodata, 0, 1)
-
-                data_to_images(echodata_swap, "out/test/test2", upper = params[0]['image_upper'], lower = params[0]['image_lower']) # save img without ground
                 
-                data_to_images(echodata_swap, f'{img_path}/{new_file_name}') # save img without ground
+                data_to_images(echodata_swap, f'{img_path}/{new_file_name}', upper = params[0]['image_upper'], lower = params[0]['image_lower']) # save img without ground
                 os.remove(f'{img_path}/{new_file_name}_greyscale.png')
 
                 # Detect bottom algorithms
@@ -81,15 +78,16 @@ if files:
  
                 data_to_images(new_echodata, f'{img_path}/{new_file_name}_complete') # save img without ground and waves
                 os.remove(f'{img_path}/{new_file_name}_complete_greyscale.png')
+                os.remove(f'{img_path}/{new_file_name}_complete.png')
 
                 # Find fish cumsum, median depth and inds
                 depth = [int(d) for d in depth]
                 
                 nasc = find_fish_median(echodata, wave_line, depth) 
-                nasc0, fish_depth0 = medianfun(nasc, params[0]['fish_layer0_start'], params[0]['fish_layer0_end'])
-                nasc1, fish_depth1 = medianfun(nasc, params[0]['fish_layer1_start'], params[0]['fish_layer1_end'])
-                nasc2, fish_depth2 = medianfun(nasc, params[0]['fish_layer2_start'], params[0]['fish_layer2_end'])
-                nasc3, fish_depth3 = medianfun(nasc, params[0]['fish_layer3_start'], params[0]['fish_layer3_end'])
+                nasc0, fish_depth0 = medianfun(nasc, params[0]['fish_layer0_start'], params[0]['fish_layer0_end'], params[0]['no_bottom_default']-1)
+                nasc1, fish_depth1 = medianfun(nasc, params[0]['fish_layer1_start'], params[0]['fish_layer1_end'], params[0]['no_bottom_default']-1)
+                nasc2, fish_depth2 = medianfun(nasc, params[0]['fish_layer2_start'], params[0]['fish_layer2_end'], params[0]['no_bottom_default']-1)
+                nasc3, fish_depth3 = medianfun(nasc, params[0]['fish_layer3_start'], params[0]['fish_layer3_end'], params[0]['no_bottom_default']-1)
 
                 #change from dm to meters 
                 depth = [i*0.1 for i in depth if i != 0]
@@ -134,7 +132,7 @@ if files:
 
                 save_data(data_dict, file.replace('.raw', '.csv'), csv_path, new_processed_files_path)
              
-                sys.exit()
+                #sys.exit()
             except Exception as error:
                 traceback.print_exc()
                 print(f'Problems with {file}')
@@ -144,4 +142,4 @@ else:
     print('All exising files already processed and analyzed.')
 
 # Run example main 
-# python3 -i edge/sailor/main.py ../../../../../../mnt/BSP_NAS2/Acoustics/Sailor_Karlso/Raw_data/2025 edge/sailor/completed_files.txt edge/sailor/new_processed_files.txt ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025/csv edge/sailor/params2025.yaml ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025/img
+# python3 edge/sailor/main.py ../../../../../../mnt/BSP_NAS2/Acoustics/Sailor_Karlso/Raw_data/2025 edge/sailor/completed_files.txt edge/sailor/new_processed_files.txt ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025 edge/sailor/paramsBaltic2025.yaml

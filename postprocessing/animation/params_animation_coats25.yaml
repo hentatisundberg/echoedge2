@@ -1,0 +1,6 @@
+
+img_height: 1500
+img_path: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Hudson2025/img/*.png"
+output_name: "echogram_hudson2025"
+target_width: 3000
+fps: 1

@@ -21,7 +21,7 @@ layer_quantile: [0, 1] # Which quantile to use when looking at each row to find 
 bottom_offset: [10, 25] # Number of pixles to remove at the bottom due to the echo effect from seabeds deeper than 100m
 bottom_hardness_thresh: [-30, -10] # Threshold used to classify bottom. Signal needs to be stronger than threshold to be classified as bottom, if signal is weaker: depth > 100m
 bottom_roughness_thresh: [10, 50] # The mean roughness (the difference in number of bins between the detected bottom in each ping) is not allowed to be greater than this thresh if a bottom is classified in the data file
-no_bottom_default: [90, 110] # Default bottom value if no bottom is found
+no_bottom_default: [90, 151] # Default bottom value if no bottom is found
 
 
 beam_dead_zone: [10, 20] # Size of echosounder near-zone, number of bins to remove at the top of the echodata
@@ -37,14 +37,14 @@ move_avg_windowsize: [1, 40] # Windowsize to use when calculating moving average
 
 
 # Start and end values for each fish layer
-fish_layer0_start: [0, 100]
-fish_layer0_end: [0, 100]
+fish_layer0_start: [0, 150]
+fish_layer0_end: [0, 150]
 
-fish_layer1_start: [0, 100]
-fish_layer1_end: [0, 100]
+fish_layer1_start: [0, 150]
+fish_layer1_end: [0, 150]
 
-fish_layer2_start: [0, 100]
-fish_layer2_end: [0, 100]
+fish_layer2_start: [0, 150]
+fish_layer2_end: [0, 150]
 
-fish_layer3_start: [0, 100]
-fish_layer3_end: [0, 100]
+fish_layer3_start: [0, 150]
+fish_layer3_end: [0, 150]

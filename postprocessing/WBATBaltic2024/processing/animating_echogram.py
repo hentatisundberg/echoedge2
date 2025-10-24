@@ -1,6 +1,9 @@
 #Load libraries
 from pathlib import Path
-import moviepy.editor as mpy
+try:
+    import moviepy.editor as mpy
+except Exception:
+    import moviepy as mpy
 import glob
 import imagesize
 import pandas as pd
