@@ -15,24 +15,42 @@ import sys
 import yaml
 from yaml.loader import SafeLoader
 
-'''
 
-# First remove all files in dump foldet
-files = glob.glob("dump/*")
 
-for file in files:
-    os.remove(file)
+# Prepare output folders and clear old files
+os.makedirs("dump", exist_ok=True)
+os.makedirs("dump/added", exist_ok=True)
+os.makedirs("dump/added_cropped", exist_ok=True)
 
-'''
+# clear any files in the two output folders and any old gifs/mp4s in dump
+for f in glob.glob("dump/added/*"):
+    try:
+        os.remove(f)
+    except Exception:
+        pass
+for f in glob.glob("dump/added_cropped/*"):
+    try:
+        os.remove(f)
+    except Exception:
+        pass
+for f in glob.glob("dump/*.gif") + glob.glob("dump/*.mp4"):
+    try:
+        os.remove(f)
+    except Exception:
+        pass
+
+
 
 # Load all params from yaml-file
 with open(sys.argv[1], 'r') as f:
     params = list(yaml.load_all(f, Loader=SafeLoader))
 
-'''
+
 
 #Create a sorted list with all the png files in our directory
+# HERE - add if there are special file endings that needs to be considered!
 file_list = sorted(glob.glob(params[0]['img_path'])) 
+
 
 #name of the animation
 gif_name = params[0]['output_name']
@@ -87,6 +105,8 @@ tempfiles = []
 counter = 0
 imcounter = 0 
 length = 0
+# Keep track of concatenated filenames we produce so later steps use the same list
+concat_files = []
 
 
 for i in range(0, len(final_list)):
@@ -96,6 +116,14 @@ for i in range(0, len(final_list)):
     if length + w > target_width and len(tempfiles) > 0:
         # Flush current batch first
         images = [cv2.imread(f) for f in tempfiles]
+        # Filter out any None values from corrupted/unreadable images
+        images = [img for img in images if img is not None]
+        if len(images) == 0:
+            print(f"Warning: All images in batch failed to load, skipping batch")
+            tempfiles = []
+            counter = 0
+            length = 0
+            continue
         im_h = cv2.hconcat(images)
         d1, t1 = Path(tempfiles[0]).name.split("-")[2:4]
         dx1 = datetime.datetime.strptime(d1+t1, "D%Y%m%dT%H%M%S") 
@@ -115,8 +143,12 @@ for i in range(0, len(final_list)):
         thickness = 2
         im_h = cv2.putText(im_h, text, org, font, fontScale, 
                         color, thickness, cv2.LINE_AA, False)
-        imcounter_fill = str(imcounter).zfill(4)    
-        cv2.imwrite(f'dump/added_{imcounter_fill}.png', im_h)
+        imcounter_fill = str(imcounter).zfill(4)
+        # build filename prefixed with output_name and including the batch start timestamp
+        start_ts = dx1.strftime('%Y%m%dT%H%M%S')
+        concat_name = f"dump/added/{gif_name}_{start_ts}_{imcounter_fill}.png"
+        cv2.imwrite(concat_name, im_h)
+        concat_files.append(concat_name)
         # Reset for new batch
         tempfiles = []
         counter = 0
@@ -137,34 +169,43 @@ if len(tempfiles) > 0:
     # Otherwise skip it to maintain better quality for all other images
     if final_batch_width >= target_width * 0.5:
         images = [cv2.imread(f) for f in tempfiles]
-        im_h = cv2.hconcat(images)
-        d1, t1 = Path(tempfiles[0]).name.split("-")[2:4]
-        dx1 = datetime.datetime.strptime(d1+t1, "D%Y%m%dT%H%M%S") 
-        str1 = dx1.strftime("%d %B, %H:%M")
-        d2, t2 = Path(tempfiles[-1]).name.split("-")[2:4]
-        dx2 = datetime.datetime.strptime(d2+t2, "D%Y%m%dT%H%M%S") 
-        str2 = dx2.strftime(" - %H:%M")
-        str3 = str1+str2
-        text = str3
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        org_x = max(10, min(1900, im_h.shape[1] - 200))
-        org_y = max(10, min(im_h.shape[0] - 50, 1450))
-        org = (org_x, org_y)
-        fontScale = 2
-        color = (0, 0, 255)
-        thickness = 2
-        im_h = cv2.putText(im_h, text, org, font, fontScale, 
-                        color, thickness, cv2.LINE_AA, False)
-        imcounter_fill = str(imcounter).zfill(4)    
-        cv2.imwrite(f'dump/added_{imcounter_fill}.png', im_h)
-        print(f"Included final batch with width {final_batch_width}")
+        # Filter out any None values from corrupted/unreadable images
+        images = [img for img in images if img is not None]
+        if len(images) == 0:
+            print(f"Warning: All images in final batch failed to load, skipping batch")
+        else:
+            im_h = cv2.hconcat(images)
+            d1, t1 = Path(tempfiles[0]).name.split("-")[2:4]
+            dx1 = datetime.datetime.strptime(d1+t1, "D%Y%m%dT%H%M%S") 
+            str1 = dx1.strftime("%d %B, %H:%M")
+            d2, t2 = Path(tempfiles[-1]).name.split("-")[2:4]
+            dx2 = datetime.datetime.strptime(d2+t2, "D%Y%m%dT%H%M%S") 
+            str2 = dx2.strftime(" - %H:%M")
+            str3 = str1+str2
+            text = str3
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            org_x = max(10, min(1900, im_h.shape[1] - 200))
+            org_y = max(10, min(im_h.shape[0] - 50, 1450))
+            org = (org_x, org_y)
+            fontScale = 2
+            color = (0, 0, 255)
+            thickness = 2
+            im_h = cv2.putText(im_h, text, org, font, fontScale, 
+                            color, thickness, cv2.LINE_AA, False)
+            imcounter_fill = str(imcounter).zfill(4)
+            start_ts = dx1.strftime('%Y%m%dT%H%M%S')
+            concat_name = f"dump/added/{gif_name}_{start_ts}_{imcounter_fill}.png"
+            cv2.imwrite(concat_name, im_h)
+            concat_files.append(concat_name)
+            print(f"Included final batch with width {final_batch_width} -> {concat_name}")
     else:
         print(f"Skipped final batch with width {final_batch_width} (less than 50% of target {target_width})")
 
 
 
 # Check resulting size of images and cut horizontally to get equal size
-file_list = sorted(glob.glob("dump/added*")) 
+# We use the list of concatenated files we created above (concat_files)
+file_list = sorted(concat_files)
 
 # Check image size of all combined images 
 ws = []
@@ -184,28 +225,13 @@ for file in file_list:
     im = cv2.imread(file)
     im_crop = im[:, 0:crop_width]
     filenum = str(counter).zfill(4)
-    cv2.imwrite(f'dump/added_cropped_{filenum}.png', im_crop)
+    cv2.imwrite(f'dump/added_cropped/{filenum}.png', im_crop)
     counter += 1
 
-'''
+
 
 # Just take 20 images at the time... 
-combined = sorted(glob.glob("dump/added_cropped*"))
-
-# Reorder: start from 0392 to end, then 0001 to 0391
-# Find the index where added_cropped_0392.png appears
-split_index = None
-for i, file in enumerate(combined):
-    if 'added_cropped_0392.png' in file:
-        split_index = i
-        break
-
-if split_index is not None:
-    # Reorder: files from 0392 onwards + files before 0392
-    combined = combined[split_index:] + combined[:split_index]
-    print(f"Reordered: starting from file {split_index} (added_cropped_0392.png)")
-else:
-    print("File added_cropped_0392.png not found, keeping original order")
+combined = sorted(glob.glob("dump/added_cropped/*"))
 
 for file in combined: 
     width, height = imagesize.get(file)
@@ -226,4 +252,4 @@ clip.write_videofile("dump/"+gif_name+'.mp4')
 
 
 # Run example
-# python postprocessing/animation/animating_echogram2.py  postprocessing/animation/params_animation_coats25.yaml
+# python3 postprocessing/animation/animating_echogram2.py  postprocessing/animation/params_animation_baltic25.yaml
