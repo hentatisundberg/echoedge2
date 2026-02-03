@@ -1,0 +1,6 @@
+
+img_height: 1000
+img_path: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Finngrundet2024/img/*0.png"
+output_name: "echogram_finngrundet2024"
+target_width: 3000
+fps: 1

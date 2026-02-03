@@ -18,6 +18,16 @@ from find_waves import find_waves, find_layer
 warnings.filterwarnings("ignore")
 
 
+def _log_unreadable(completed_files_path, filename, reason):
+    try:
+        base_dir = os.path.dirname(os.path.abspath(completed_files_path))
+        log_path = os.path.join(base_dir, 'unreadable_files.txt')
+        with open(log_path, 'a') as f:
+            f.write(f"{filename}\t{reason}\n")
+    except Exception:
+        pass
+
+
 # Load all params from yaml-file
 with open(sys.argv[5], 'r') as f:
     params = list(yaml.load_all(f, Loader=SafeLoader))
@@ -47,11 +57,13 @@ if files:
         print(file)
         if '.raw' in file:
             try: 
-                with open(completed_files_path, 'a') as txt_doc:
-                    txt_doc.write(f'{file}\n')
-
-                filepath = f'{path}/{file}'
-                new_file_name = filepath.split('/')[-1].replace('.raw', '')
+                # Build absolute path and pre-check read access before processing
+                filepath = os.path.abspath(os.path.join(path, file))
+                new_file_name = os.path.splitext(os.path.basename(filepath))[0]
+                if not os.path.isfile(filepath) or not os.access(filepath, os.R_OK):
+                    print(f'Skipping {file}: no read permission on {filepath}')
+                    _log_unreadable(completed_files_path, file, f'No read permission on {filepath}')
+                    continue
 
                 # Load and process the raw data files
                 echodata, ping_times = process_data(filepath, params[0]['env_params'], params[0]['cal_params'], params[0]['bin_size'], 'BB')
@@ -131,11 +143,19 @@ if files:
         
 
                 save_data(data_dict, file.replace('.raw', '.csv'), csv_path, new_processed_files_path)
-             
-                #sys.exit()
+
+                # Mark as completed only after successful save
+                with open(completed_files_path, 'a') as txt_doc:
+                    txt_doc.write(f'{file}\n')
+
+            except PermissionError as error:
+                print(f'Skipping {file}: Permission denied -> {error}')
+                _log_unreadable(completed_files_path, file, f'Permission denied on {filepath}')
+                continue
             except Exception as error:
                 traceback.print_exc()
                 print(f'Problems with {file}')
+                _log_unreadable(completed_files_path, file, f'Processing failed: {error.__class__.__name__}: {error}')
                 continue
 
 else:
