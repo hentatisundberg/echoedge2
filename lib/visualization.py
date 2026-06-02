@@ -4,12 +4,27 @@ import cv2
 import os
 
 # Plot and Visualize data
-def data_to_images(data, img_path='', npy_path = '', normalization=False, upper=False, lower=False):
+def data_to_images(data, img_path='', npy_path = '', normalization=False, upper=None, lower=None):
     """
     Function to create images (greyscale & viridis) from np_array with high resolution and exportmatrix of the image as .npy
     """
 
-    np_data = np.nan_to_num(data, copy=True)
+    np_data = np.asarray(data, dtype=np.float32)
+
+    if upper is None or lower is None:
+        valid_data = np_data[np.isfinite(np_data)]
+        valid_data = valid_data[valid_data != 0]
+
+        if valid_data.size == 0:
+            valid_data = np_data[np.isfinite(np_data)]
+
+        lower = float(np.nanpercentile(valid_data, 2))
+        upper = float(np.nanpercentile(valid_data, 98))
+
+    np_data = np.nan_to_num(np_data, copy=True).astype(np.float32)
+
+    if upper == lower:
+        upper = lower + 1
 
     if normalization == 'low-low':
 
@@ -22,7 +37,11 @@ def data_to_images(data, img_path='', npy_path = '', normalization=False, upper=
         np_data[np_data > upper] = upper
 
     np_data = (np_data - lower)/(upper - lower)
-    np_data = np_data*256
+    np_data = np.clip(np_data * 255, 0, 255).astype(np.uint8)
+
+    output_dir = os.path.dirname(img_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     
     if img_path.endswith('complete') and not os.path.exists(f'{npy_path}.npy'):
         np.save(f'{npy_path}', data)

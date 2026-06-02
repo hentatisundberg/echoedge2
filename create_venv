@@ -1,4 +1,6 @@
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -r requirements.txt
-pip3 install -e . # install library for this repo
+python3.12 -m venv .venv_echoregions
+source .venv_echoregions/bin/activate
+python -m pip install --upgrade pip
+
+python -m pip install --upgrade --no-cache-dir -r requirements.txt
+#python -m pip install -e . # install library for this repo

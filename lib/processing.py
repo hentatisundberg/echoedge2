@@ -47,7 +47,7 @@ def extract_meta_data(path):
 
     return raw_echodata, channels, longitude, latitude, transmit_type
 
-def process_data(path, env_params, cal_params, bin_size, waveform, ping_time_bin='2S'):
+def process_data(path, env_params, cal_params, bin_size, waveform, ping_time_bin='2s'):
     """
     Env_params : dictionary with water temperature in degree C, salinity, pressure in dBar
     Cal_params : dictionary with gain correction (middle value with 0.6.4 version), equivalent beam angle
@@ -56,7 +56,7 @@ def process_data(path, env_params, cal_params, bin_size, waveform, ping_time_bin
     run swap_chan. Returns NetCDF object (xarray.core.dataset.Dataset). 
     """
 
-    if '.raw' or '.RAW' in path:
+    if '.raw' in path.lower():
         raw_echodata = ep.open_raw(path, sonar_model="EK80")
     
     ds_Sv_raw = ep.calibrate.compute_Sv(
@@ -69,7 +69,7 @@ def process_data(path, env_params, cal_params, bin_size, waveform, ping_time_bin
 
     ds_MVBS = ep.commongrid.compute_MVBS(
         ds_Sv_raw, # calibrated Sv dataset
-        range_meter_bin=bin_size, # bin size to average along range in meters
+        range_bin=f"{bin_size}m", # bin size to average along range in meters
         ping_time_bin=ping_time_bin # bin size to average along ping_time in seconds
     )
 
@@ -129,7 +129,7 @@ def get_interpolated_gps(path, frequency=1):
     df['Time'] = pd.to_datetime((df['Time'].astype(np.int64)).astype('datetime64[ns]'))
 
     # new range (once a second), resample and interpolate
-    new_range = pd.date_range(df.Time[0], df.Time.values[-1], freq=str(frequency)+'S')
+    new_range = pd.date_range(df.Time[0], df.Time.values[-1], freq=str(frequency)+'s')
     interpolated_df = df.set_index('Time').reindex(new_range).interpolate().reset_index()
     interpolated_df.rename(columns= {'index' : 'Datetime'}, inplace=True)
     interpolated_df['Longitude'] = interpolated_df['Longitude'].apply(lambda x: round(x, 5))
@@ -161,7 +161,7 @@ def get_interpolated_gps2(path, ltz, frequency=2):
     df = df[~df.Datetime_UTC.duplicated()]
 
     # new range (2 seconds), resample and interpolate
-    new_range = pd.date_range(df.Datetime_UTC[0], df.Datetime_UTC.values[-1], freq=str(frequency)+'S')
+    new_range = pd.date_range(df.Datetime_UTC[0], df.Datetime_UTC.values[-1], freq=str(frequency)+'s')
     print("new range:",df.Datetime_UTC[0])
     print("new range:",df.Datetime_UTC.values[-1])
     interpolated_df = df.set_index('Datetime_UTC').reindex(new_range).interpolate().reset_index()
