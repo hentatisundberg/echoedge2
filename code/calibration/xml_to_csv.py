@@ -10,13 +10,15 @@ import sys
 
 #!/usr/bin/env python3
 """
-xml_to_calib_csv.py
-
-Usage:
-    python xml_to_calib_csv.py input.xml output.csv
-
 This script streams the XML and extracts data under each <CalibrationResults>
 element to a CSV with the exact column order requested.
+
+
+Usage:
+    python3 xml_to_calib_csv.py \
+        temp/CalibrationDataFile-D20250706HudsonBay.xml  \
+        temp/cal_hudson2025.csv
+
 """
 
 import sys
@@ -182,5 +184,3 @@ if __name__ == "__main__":
     output_csv = sys.argv[2]
     stream_and_extract(input_xml, output_csv)
 
-# Run example
-# python3 code/calibration/xml_to_csv.py temp/CalibrationDataFile-D20250706HudsonBay.xml temp/cal_hudson2025.csv
