@@ -18,6 +18,17 @@ from find_waves import find_waves, find_layer
 warnings.filterwarnings("ignore")
 
 
+# RUN EXAMPLE MAIN 
+
+""" 
+    python3 edge/sailor/main.py \
+    ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor2/Raw_data/2026 \
+    edge/sailor/completed_files.txt \
+    edge/sailor/new_processed_files.txt \
+    ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2026 \
+    edge/sailor/paramsSillenBaltic2026.yaml \
+    SAILOR2  """
+
 def _log_unreadable(completed_files_path, filename, reason):
     try:
         base_dir = os.path.dirname(os.path.abspath(completed_files_path))

@@ -1,11 +1,11 @@
-env_params:       #2023
-  temperature: 12 
-  salinity: 8
-  pressure: 1.1325
+env_params:
+  temperature: 10
+  salinity: 9
+  pressure: 10.1325
 
 
-cal_params:        #2023
-  gain_correction: 28.65
+cal_params:
+  gain_correction: 28.3
   equialent_beam_angle: -21
 
 
@@ -24,9 +24,9 @@ bottom_roughness_thresh: 30
 no_bottom_default: 101
 
 
-sonar_depth: 0.6
 beam_dead_zone: 10
 dead_zone: 15
+sonar_depth: 0.53
 
 wave_thresh: -77
 wave_thresh_layer: -68
@@ -34,8 +34,10 @@ extreme_wave_size: 70
 in_a_row_waves: 3
 
 
-move_avg_windowsize: 9
+move_avg_windowsize: 50
 
+image_upper: -35
+image_lower: -100
 
 fish_layer0_start: 0
 fish_layer0_end: 100
@@ -48,5 +50,3 @@ fish_layer2_end: 80
 
 fish_layer3_start: 80
 fish_layer3_end: 100
-
-ltz : "Europe/Berlin"

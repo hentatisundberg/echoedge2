@@ -1,5 +1,0 @@
-
-
-rsync dump/added/* jonas@77.235.243.5:/volume2/BSP_work/Acoustics_output_data/Echopype_results/Finngrundet2024/Echograms_combined/
-rsync dump/echogram_finngrundet2024.mp4 jonas@77.235.243.5:/volume2/BSP_work/Acoustics_output_data/Echopype_results/Finngrundet2024/
-
