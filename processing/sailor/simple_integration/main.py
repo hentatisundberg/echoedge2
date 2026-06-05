@@ -5,7 +5,7 @@ import yaml
 import os
 import traceback
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../lib'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../lib'))
 
 from yaml.loader import SafeLoader
 from find_bottom import find_bottom
@@ -21,13 +21,13 @@ warnings.filterwarnings("ignore")
 # RUN EXAMPLE MAIN 
 
 """ 
-    python3 edge/sailor/main.py \
-    ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor2/Raw_data/2026 \
-    edge/sailor/completed_files.txt \
-    edge/sailor/new_processed_files.txt \
-    ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2026 \
-    edge/sailor/paramsSillenBaltic2026.yaml \
-    SAILOR2  """
+    python3 processing/sailor/simple_integration/main.py \
+    ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor1/Raw_data/2026 \
+    processing/sailor/simple_integration/completed_files.txt \
+    processing/sailor/simple_integration/new_processed_files.txt \
+    ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026 \
+    processing/sailor/simple_integration/config/paramsSailorBaltic2026.yaml \
+    SAILOR1  """
 
 def _log_unreadable(completed_files_path, filename, reason):
     try:

@@ -11,6 +11,9 @@ def shorten_list(original_list, target_length):
 
 def save_data(data, filename, save_path, txt_path=False):
 
+    if save_path:
+        os.makedirs(save_path, exist_ok=True)
+    
     df = pd.DataFrame(data, index = range(0, len(data["depth"])))
     df.to_csv(f'{save_path}/{filename}')
 
