@@ -47,6 +47,10 @@ with open(sys.argv[1], 'r') as f:
 
 
 
+print(params)
+
+
+
 #Create a sorted list with all the png files in our directory
 # HERE - add if there are special file endings that needs to be considered!
 file_list = sorted(glob.glob(params[0]['img_path'])) 
@@ -157,11 +161,8 @@ for i in range(0, len(final_list)):
     
     # Add current file to the batch
     tempfiles.append(final_list[i])
-    counter += 1
-    length += w
+    counter += 1img_height: 1000
 
-# After loop, flush any remaining images ONLY if they form a reasonably sized batch
-# (We skip the last partial batch to avoid making all images too small)
 if len(tempfiles) > 0:
     # Calculate what the final batch width would be
     final_batch_width = sum([filelength[final_list.index(f)] for f in tempfiles])
@@ -247,9 +248,20 @@ clip = mpy.ImageSequenceClip(combined, fps=fps)
 #No we can write the animation as a a gif
 clip.write_gif("dump/"+gif_name+'.gif')
 
-#No we can write the animation as a a mp4
-clip.write_videofile("dump/"+gif_name+'.mp4')
+
+# Save animaton to NAS
+os.makedirs(params[0]['save_path'], exist_ok=True)
 
 
-# Run example
-# python3 postprocessing/animation/animating_echogram2.py  postprocessing/animation/params_animation_baltic25.yaml
+clip.write_videofile(params[0]['save_path']+gif_name+'.mp4')
+
+
+
+
+# RUN EXAMPLE
+
+"""
+
+python3 processing/animation/animating_echogram2.py  processing/animation/config/params_animation_baltic26_sillen.yaml
+
+"""

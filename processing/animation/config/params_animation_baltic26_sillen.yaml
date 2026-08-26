@@ -1,0 +1,6 @@
+img_height: 1000
+img_path: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SillenBaltic2026/img/*.png"
+output_name: "echogram_sillen_baltic2026"
+save_path: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SillenBaltic2026/animation/"
+target_width: 3000
+fps: 1

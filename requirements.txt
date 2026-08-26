@@ -2,3 +2,5 @@ echopype
 tqdm
 matplotlib
 opencv_python
+imagesize
+moviepy
