@@ -7,11 +7,11 @@ and appends the resulting rows to a SQLite database.
 Example run:
 
     python3 metadatabase/import_tracks.py \
-        --platform SAILOR2 \
+        --platform SAILOR1 \
         --interpolation-seconds 60 \
-        /home/jonas/Documents/vscode/echoedge/temp/temp_pos/SB2530A.txt \
-        /home/jonas/Documents/vscode/echoedge/temp/temp_pos/SB2530D.txt \
-        /home/jonas/Documents/vscode/echoedge/metadatabase/sailbuoy_metadatabase.db
+        temp/SB1810A3.txt \
+        temp/SB1810D3.txt \
+        metadatabase/sailbuoy_metadatabase.db
 
 To skip interpolation entirely, pass ``--interpolation-seconds 0``.
 To keep a coarse track, the default is one row per minute.
@@ -27,7 +27,7 @@ import datetime as dt
 import math
 import sqlite3
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -35,6 +35,7 @@ import pandas as pd
 
 SURVEY_GAP_DAYS = 3
 DEFAULT_INTERPOLATION_SECONDS = 60
+DEFAULT_MAX_INTERPOLATION_HOURS = 2
 
 TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS track_points (
@@ -136,7 +137,11 @@ def load_existing_state(connection: sqlite3.Connection, platform: str) -> Dict[s
     """Load existing timestamps, the most recent row, and survey sequence state."""
 
     existing_df = pd.read_sql_query(
-        "SELECT timestamp_utc, survey_id, latitude, longitude FROM track_points WHERE platform = ?",
+        """
+        SELECT timestamp_utc, survey_id, latitude, longitude
+        FROM track_points
+        WHERE platform = ? AND is_interpolated = 0
+        """,
         connection,
         params=(platform,),
     )
@@ -156,7 +161,7 @@ def load_existing_state(connection: sqlite3.Connection, platform: str) -> Dict[s
 
     max_sequence_by_year: Dict[int, int] = {}
     surveys = pd.read_sql_query(
-        "SELECT DISTINCT survey_id FROM track_points WHERE platform = ?",
+        "SELECT DISTINCT survey_id FROM track_points WHERE platform = ? AND is_interpolated = 0",
         connection,
         params=(platform,),
     )
@@ -258,6 +263,7 @@ def assign_surveys(
 def interpolate_group_at_interval(
     group: pd.DataFrame,
     interpolation_seconds: int,
+    max_interpolation_hours: float = DEFAULT_MAX_INTERPOLATION_HOURS,
     anchor_row: Optional[pd.Series] = None,
 ) -> pd.DataFrame:
     """Interpolate a single survey at a configurable interval.
@@ -266,6 +272,9 @@ def interpolate_group_at_interval(
     observations only.
     """
 
+    if group.empty:
+        return group.copy()
+
     working = group.sort_values("timestamp_utc").reset_index(drop=True).copy()
     if anchor_row is not None:
         anchor_df = pd.DataFrame([anchor_row])
@@ -273,24 +282,26 @@ def interpolate_group_at_interval(
 
     working = working.drop_duplicates(subset=["timestamp_utc"], keep="first").sort_values("timestamp_utc")
     working = working.set_index("timestamp_utc")
+    measured_timestamps = working.index
 
-    if interpolation_seconds <= 0:
+    if interpolation_seconds <= 0 or len(measured_timestamps) < 2:
         interpolated = working.copy()
     else:
-        full_range = pd.date_range(
-            working.index.min(),
-            working.index.max(),
-            freq=pd.to_timedelta(interpolation_seconds, unit="s"),
-            tz="UTC",
+        max_gap = pd.Timedelta(hours=max_interpolation_hours)
+        target_timestamps = set(measured_timestamps)
+        interval = pd.to_timedelta(interpolation_seconds, unit="s")
+        for start, end in zip(measured_timestamps[:-1], measured_timestamps[1:]):
+            if end - start <= max_gap:
+                target_timestamps.update(pd.date_range(start, end, freq=interval, tz="UTC"))
+
+        target_index = pd.DatetimeIndex(sorted(target_timestamps))
+        interpolated = working.reindex(target_index)
+        interpolated["latitude"] = interpolated["latitude"].astype(float).interpolate(
+            method="time", limit_area="inside"
         )
-        interpolated = working.reindex(full_range)
-
-    original_timestamps = set(group["timestamp_utc"])
-    if anchor_row is not None:
-        original_timestamps.add(pd.Timestamp(anchor_row["timestamp_utc"]).tz_convert("UTC"))
-
-    interpolated["latitude"] = interpolated["latitude"].astype(float).interpolate(method="linear")
-    interpolated["longitude"] = interpolated["longitude"].astype(float).interpolate(method="linear")
+        interpolated["longitude"] = interpolated["longitude"].astype(float).interpolate(
+            method="time", limit_area="inside"
+        )
 
     interpolated["platform"] = group["platform"].iloc[0]
     interpolated["survey_id"] = group["survey_id"].iloc[0]
@@ -300,7 +311,7 @@ def interpolate_group_at_interval(
     else:
         interpolated["source_file"] = "interpolated"
 
-    interpolated["is_interpolated"] = (~interpolated.index.isin(original_timestamps)).astype(int)
+    interpolated["is_interpolated"] = (~interpolated.index.isin(measured_timestamps)).astype(int)
     interpolated = interpolated.reset_index().rename(columns={"index": "timestamp_utc"})
     interpolated["timestamp_utc"] = pd.to_datetime(interpolated["timestamp_utc"], utc=True)
     interpolated.loc[interpolated["is_interpolated"] == 1, "source_file"] = "interpolated"
@@ -357,7 +368,7 @@ def haversine_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> 
 
 
 def write_to_database(connection: sqlite3.Connection, df: pd.DataFrame) -> int:
-    """Append rows to SQLite using bulk insertion and ignore duplicates safely."""
+    """Insert rows, replacing an interpolated row with a measured observation."""
 
     if df.empty:
         return 0
@@ -383,6 +394,8 @@ def write_to_database(connection: sqlite3.Connection, df: pd.DataFrame) -> int:
         ].itertuples(index=False, name=None)
     )
 
+    measured_keys = [(row[0], row[2]) for row in rows if row[7] == 0]
+
     sql = """
     INSERT OR IGNORE INTO track_points (
         platform,
@@ -399,15 +412,24 @@ def write_to_database(connection: sqlite3.Connection, df: pd.DataFrame) -> int:
     """
 
     with connection:
+        connection.executemany(
+            """
+            DELETE FROM track_points
+            WHERE platform = ? AND timestamp_utc = ? AND is_interpolated = 1
+            """,
+            measured_keys,
+        )
+        before_inserts = connection.total_changes
         connection.executemany(sql, rows)
 
-    return len(rows)
+    return connection.total_changes - before_inserts
 
 
 def build_output_frame(
     new_rows: pd.DataFrame,
     anchor_row: Optional[pd.Series],
     interpolation_seconds: int,
+    max_interpolation_hours: float = DEFAULT_MAX_INTERPOLATION_HOURS,
 ) -> pd.DataFrame:
     """Interpolate each survey and produce the final insert dataframe."""
 
@@ -423,6 +445,7 @@ def build_output_frame(
         interpolated_group = interpolate_group_at_interval(
             group,
             interpolation_seconds=interpolation_seconds,
+            max_interpolation_hours=max_interpolation_hours,
             anchor_row=survey_anchor,
         )
         outputs.append(interpolated_group)
@@ -462,6 +485,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=DEFAULT_INTERPOLATION_SECONDS,
         help="Interpolation interval in seconds; use 0 to skip interpolation.",
     )
+    parser.add_argument(
+        "--max-interpolation-hours",
+        type=float,
+        default=DEFAULT_MAX_INTERPOLATION_HOURS,
+        help="Do not interpolate across gaps longer than this many hours.",
+    )
 
     args = parser.parse_args(argv)
 
@@ -489,13 +518,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         if anchor_row is not None:
             print("Continuing the latest existing survey from the database.")
 
-        prepared = build_output_frame(assigned, anchor_row, args.interpolation_seconds)
+        prepared = build_output_frame(
+            assigned,
+            anchor_row,
+            args.interpolation_seconds,
+            args.max_interpolation_hours,
+        )
         if prepared.empty:
             print("No rows remained after interpolation.")
             return 0
 
         inserted_rows = write_to_database(connection, prepared)
-        print(f"Prepared {len(prepared)} rows and attempted to insert {inserted_rows} rows into {database_path}.")
+        print(f"Prepared {len(prepared)} rows and inserted {inserted_rows} new rows into {database_path}.")
         print("Import completed successfully.")
         return 0
     finally:

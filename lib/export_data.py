@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 def shorten_list(original_list, target_length):

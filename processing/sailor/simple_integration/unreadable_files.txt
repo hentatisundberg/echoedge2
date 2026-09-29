@@ -1,22 +1,15 @@
-SLUAquaSailor2020V2-Phase0-D20260316-T143947-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T145113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T150117-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T151117-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T152115-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T153117-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T154113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T155116-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T160119-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T161114-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T162113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T163112-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T164111-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T165111-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T170113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T171113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T172112-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T173113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T174113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T175114-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T180113-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
-SLUAquaSailor2020V2-Phase0-D20260316-T181111-0.raw	Processing failed: OSError: Cannot save file into a non-existent directory: '../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026/csv'
+SLUAquaSailor2020V2-Phase0-D20260428-T234231-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T234649-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T235142-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T235201-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T235222-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T235552-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260428-T235601-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T102342-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T103113-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T104113-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T105113-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T110113-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T111113-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T112111-0.raw	Processing failed: NameError: name 'os' is not defined
+SLUAquaSailor2020V2-Phase0-D20260616-T113113-0.raw	Processing failed: NameError: name 'os' is not defined

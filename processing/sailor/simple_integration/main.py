@@ -4,6 +4,7 @@ import sys
 import yaml
 import os
 import traceback
+import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../lib'))
 
@@ -18,16 +19,29 @@ from find_waves import find_waves, find_layer
 warnings.filterwarnings("ignore")
 
 
-# RUN EXAMPLE MAIN 
+# RUN EXAMPLE MAIN
 
-""" 
+"""
     python3 processing/sailor/simple_integration/main.py \
-    ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor1/Raw_data/2026 \
-    processing/sailor/simple_integration/completed_files.txt \
-    processing/sailor/simple_integration/new_processed_files.txt \
-    ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026 \
-    processing/sailor/simple_integration/config/paramsSailorBaltic2026.yaml \
-    SAILOR1  """
+    --raw-path ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor1/Raw_data/2026 \
+    --completed-files-path processing/sailor/simple_integration/completed_files.txt \
+    --new-processed-files-path processing/sailor/simple_integration/new_processed_files.txt \
+    --output-path ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026 \
+    --params-path processing/sailor/simple_integration/config/paramsSailorBaltic2026.yaml
+"""
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser(description='Process Sailor echosounder data.')
+    parser.add_argument('--raw-path', required=True, help='Directory containing raw echosounder files.')
+    parser.add_argument('--completed-files-path', required=True, help='File listing already processed files.')
+    parser.add_argument('--new-processed-files-path', required=True, help='File to write newly processed files to.')
+    parser.add_argument('--output-path', required=True, help='Directory where processed CSV files and images are saved.')
+    parser.add_argument('--params-path', required=True, help='YAML file containing processing parameters.')
+    return parser.parse_args()
+
+
+args = _parse_args()
 
 def _log_unreadable(completed_files_path, filename, reason):
     try:
@@ -40,15 +54,15 @@ def _log_unreadable(completed_files_path, filename, reason):
 
 
 # Load all params from yaml-file
-with open(sys.argv[5], 'r') as f:
+with open(args.params_path, 'r') as f:
     params = list(yaml.load_all(f, Loader=SafeLoader))
 
 
 # Remove already processed files  
-path = sys.argv[1]
-completed_files_path = sys.argv[2]
-new_processed_files_path = sys.argv[3]
-output_path = sys.argv[4]
+path = args.raw_path
+completed_files_path = args.completed_files_path
+new_processed_files_path = args.new_processed_files_path
+output_path = args.output_path
 csv_path = output_path+'/csv'
 img_path = output_path+'/img'
 
@@ -172,5 +186,10 @@ if files:
 else:
     print('All exising files already processed and analyzed.')
 
-# Run example main 
-# python3 edge/sailor/main.py ../../../../../../mnt/BSP_NAS2/Acoustics/Sailor_Karlso/Raw_data/2025 edge/sailor/completed_files.txt edge/sailor/new_processed_files.txt ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025 edge/sailor/paramsBaltic2025.yaml
+# Run example main
+# python3 processing/sailor/simple_integration/main.py \
+#     --raw-path ../../../../../../mnt/BSP_NAS2/Acoustics/Sailor_Karlso/Raw_data/2025 \
+#     --completed-files-path processing/sailor/simple_integration/completed_files.txt \
+#     --new-processed-files-path processing/sailor/simple_integration/new_processed_files.txt \
+#     --output-path ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/Baltic2025 \
+#     --params-path processing/sailor/simple_integration/config/paramsBaltic2025.yaml
