@@ -1,0 +1,12 @@
+db_path: "metadatabase/sailbuoy_metadatabase.db"
+survey_id: "SAILOR1_2026_003"
+img_dir: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/EchopypeV2/SLU_Sailor1/2026/images"
+filename_pattern: "*clean.png"
+save_path: "../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/EchopypeV2/SLU_Sailor1/2026/animation"
+img_height: 799
+target_width: 2200
+# Zero means unlimited. Set a positive value to sample at most this many source images.
+max_images: 0
+# 1.0 keeps the original width; smaller values condense images horizontally.
+x_shrink_factor: 0.15
+fps: 1

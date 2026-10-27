@@ -18,6 +18,9 @@ To keep a coarse track, the default is one row per minute.
 Do not leave any spaces after a line-continuation backslash.
 
 The CSV files must contain the columns: time, lat, long.
+
+The target database also contains a ``survey_summary`` view with one row per
+survey and aggregate track statistics.
 """
 
 from __future__ import annotations
@@ -54,6 +57,104 @@ CREATE TABLE IF NOT EXISTS track_points (
 )
 """
 
+SURVEY_SUMMARY_VIEW = """
+CREATE VIEW survey_summary AS
+WITH survey_rows AS (
+    SELECT
+        survey_id,
+        platform,
+        timestamp_utc,
+        latitude,
+        longitude,
+        distance_m,
+        speed_ms
+    FROM track_points
+    WHERE survey_id IS NOT NULL
+),
+latitude_ranked AS (
+    SELECT
+        survey_id,
+        latitude,
+        ROW_NUMBER() OVER (PARTITION BY survey_id ORDER BY latitude) AS row_number,
+        COUNT(*) OVER (PARTITION BY survey_id) AS row_count
+    FROM survey_rows
+    WHERE latitude IS NOT NULL
+),
+longitude_ranked AS (
+    SELECT
+        survey_id,
+        longitude,
+        ROW_NUMBER() OVER (PARTITION BY survey_id ORDER BY longitude) AS row_number,
+        COUNT(*) OVER (PARTITION BY survey_id) AS row_count
+    FROM survey_rows
+    WHERE longitude IS NOT NULL
+),
+speed_ranked AS (
+    SELECT
+        survey_id,
+        speed_ms,
+        ROW_NUMBER() OVER (PARTITION BY survey_id ORDER BY speed_ms) AS row_number,
+        COUNT(*) OVER (PARTITION BY survey_id) AS row_count
+    FROM survey_rows
+    WHERE speed_ms IS NOT NULL
+),
+latitude_medians AS (
+    SELECT
+        survey_id,
+        AVG(latitude) AS median_latitude
+    FROM latitude_ranked
+    WHERE row_number IN ((row_count + 1) / 2, (row_count + 2) / 2)
+    GROUP BY survey_id
+),
+longitude_medians AS (
+    SELECT
+        survey_id,
+        AVG(longitude) AS median_longitude
+    FROM longitude_ranked
+    WHERE row_number IN ((row_count + 1) / 2, (row_count + 2) / 2)
+    GROUP BY survey_id
+),
+speed_medians AS (
+    SELECT
+        survey_id,
+        AVG(speed_ms) AS median_speed_ms
+    FROM speed_ranked
+    WHERE row_number IN ((row_count + 1) / 2, (row_count + 2) / 2)
+    GROUP BY survey_id
+),
+survey_stats AS (
+    SELECT
+        survey_id,
+        MAX(platform) AS platform,
+        MIN(timestamp_utc) AS start_time,
+        MAX(timestamp_utc) AS end_time,
+        unixepoch(MAX(timestamp_utc)) - unixepoch(MIN(timestamp_utc))
+            AS total_elapsed_seconds,
+        COALESCE(
+            SUM(CASE WHEN speed_ms < 2.0 THEN COALESCE(distance_m, 0.0) ELSE 0.0 END),
+            0.0
+        ) AS total_distance_m,
+        AVG(speed_ms) AS mean_speed_ms
+    FROM survey_rows
+    GROUP BY survey_id
+)
+SELECT
+    survey_stats.survey_id,
+    survey_stats.start_time,
+    survey_stats.end_time,
+    latitude_medians.median_latitude,
+    longitude_medians.median_longitude,
+    survey_stats.platform,
+    survey_stats.total_elapsed_seconds,
+    survey_stats.total_distance_m,
+    survey_stats.mean_speed_ms,
+    speed_medians.median_speed_ms
+FROM survey_stats
+LEFT JOIN latitude_medians USING (survey_id)
+LEFT JOIN longitude_medians USING (survey_id)
+LEFT JOIN speed_medians USING (survey_id)
+"""
+
 
 def create_database(db_path: Path) -> sqlite3.Connection:
     """Open the SQLite database and create the target table if needed."""
@@ -63,6 +164,14 @@ def create_database(db_path: Path) -> sqlite3.Connection:
     connection.execute(TABLE_SCHEMA)
     connection.commit()
     return connection
+
+
+def refresh_survey_summary_view(connection: sqlite3.Connection) -> None:
+    """Create or replace the survey summary view after track-point updates."""
+
+    connection.execute("DROP VIEW IF EXISTS survey_summary")
+    connection.execute(SURVEY_SUMMARY_VIEW)
+    connection.commit()
 
 
 def utc_now_string() -> str:
@@ -512,6 +621,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
         if filtered.empty:
             print("No new track points to import.")
+            refresh_survey_summary_view(connection)
+            print(f"Survey summary view refreshed in {database_path}.")
             return 0
 
         assigned, anchor_row = assign_surveys(filtered, platform, existing_state, args.survey_gap_days)
@@ -526,10 +637,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         )
         if prepared.empty:
             print("No rows remained after interpolation.")
+            refresh_survey_summary_view(connection)
+            print(f"Survey summary view refreshed in {database_path}.")
             return 0
 
         inserted_rows = write_to_database(connection, prepared)
+        refresh_survey_summary_view(connection)
         print(f"Prepared {len(prepared)} rows and inserted {inserted_rows} new rows into {database_path}.")
+        print(f"Survey summary view refreshed in {database_path}.")
         print("Import completed successfully.")
         return 0
     finally:

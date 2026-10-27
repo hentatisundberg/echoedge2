@@ -23,11 +23,11 @@ warnings.filterwarnings("ignore")
 
 """
     python3 processing/sailor/simple_integration/main.py \
-    --raw-path ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor1/Raw_data/2026 \
+    --raw-path ../../../../../../mnt/BSP_NAS2/Acoustics/SLU_Sailor2/Raw_data/2026 \
     --completed-files-path processing/sailor/simple_integration/completed_files.txt \
     --new-processed-files-path processing/sailor/simple_integration/new_processed_files.txt \
-    --output-path ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SailorBaltic2026 \
-    --params-path processing/sailor/simple_integration/config/paramsSailorBaltic2026.yaml
+    --output-path ../../../../../../mnt/BSP_NAS2_work/Acoustics_output_data/Echopype_results/SillenBaltic2026 \
+    --params-path processing/sailor/simple_integration/config/paramsSillenBaltic2026.yaml
 """
 
 
